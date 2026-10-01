@@ -54,6 +54,24 @@ type ArchiveItem = {
   answer: string;
 };
 
+type ClassSession = {
+  id: number;
+  subject: string;
+  topic: string;
+  date: string;
+  time: string;
+  room: string;
+  description: string;
+  people: number;
+  min: number;
+  monitor: string;
+};
+
+const initialClasses: ClassSession[] = [
+  { id: 1, subject: "Algoritmos", topic: "Recursão e análise de complexidade", date: "30 set", time: "14h", room: "Sala 12 — Bloco B", description: "Revisão dos casos base e da pilha de chamadas com exercícios guiados.", people: 7, min: 5, monitor: "Carlos" },
+  { id: 2, subject: "Banco de Dados", topic: "Normalização e modelagem relacional", date: "02 out", time: "16h", room: "Laboratório 3", description: "Da primeira à terceira forma normal com exemplos de modelagem.", people: 3, min: 5, monitor: "Ana" },
+];
+
 const initialQuestions: Question[] = [
   { id: 1, title: "Como funciona a recursão na busca binária?", subject: "Algoritmos", topic: "Recursão", status: "Em atendimento", monitor: "Carlos", author: "Marina", time: "há 18 min" },
   { id: 2, title: "Diferença entre pilha e fila na prática", subject: "Estrutura de Dados", topic: "Estruturas lineares", status: "Pendente", monitor: "Ana", author: "Pedro", time: "há 32 min" },
@@ -105,6 +123,7 @@ export function MonitoriaApp() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [questions, setQuestions] = useState(initialQuestions);
   const [archive, setArchive] = useState(initialArchive);
+  const [classes, setClasses] = useState(initialClasses);
   const [toast, setToast] = useState("");
 
   const notify = (message: string) => {
