@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   Lightbulb,
   LogOut,
+  Megaphone,
   Menu,
   MessageSquareText,
   Search,
@@ -76,6 +77,12 @@ const initialArchive: ArchiveItem[] = [
   { id: 2, subject: "Estrutura de Dados", topic: "Árvores", title: "Qual a diferença entre árvore binária e AVL?", preview: "A AVL mantém o balanceamento automaticamente após inserções...", answer: "Uma árvore binária limita cada nó a dois filhos. A AVL adiciona uma regra de balanceamento: a diferença de altura entre as subárvores nunca pode ultrapassar 1." },
   { id: 3, subject: "Banco de Dados", topic: "SQL", title: "INNER JOIN e LEFT JOIN retornam os mesmos dados?", preview: "O INNER JOIN retorna apenas correspondências; o LEFT...", answer: "Não. INNER JOIN mantém somente linhas com correspondência nas duas tabelas. LEFT JOIN mantém todas as linhas da tabela à esquerda, preenchendo ausências com NULL." },
   { id: 4, subject: "Algoritmos", topic: "Grafos", title: "Como escolher entre BFS e DFS?", preview: "BFS é adequada para menores caminhos sem peso, enquanto...", answer: "Use BFS para explorar por níveis e encontrar menores caminhos em grafos sem peso. Use DFS para explorar profundamente, detectar ciclos e realizar ordenação topológica." },
+];
+
+const initialNotices: Notice[] = [
+  { id: 1, author: "Monitor Carlos", title: "Monitoria de Algoritmos — recursão", text: "Na monitoria de amanhã vamos revisar recursão e casos base, com exercícios de fixação. Tragam suas dúvidas da lista 3.", date: "29 set 2026", time: "15h42" },
+  { id: 2, author: "Monitora Ana", title: "Aula de BD adiada", text: "A aula coletiva de Normalização foi remarcada para sexta-feira, 16h, na Sala 12 — Bloco B. O conteúdo será o mesmo.", date: "28 set 2026", time: "10h15" },
+  { id: 3, author: "Monitor Carlos", title: "Assuntos da semana", text: "Esta semana as monitorias de Algoritmos vão focar em grafos: BFS, DFS e caminhos mínimos. Atendimento normal nos horários de sempre.", date: "26 set 2026", time: "09h03" },
 ];
 
 const studentNav = [
