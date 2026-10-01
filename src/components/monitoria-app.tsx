@@ -123,6 +123,7 @@ export function MonitoriaApp() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [questions, setQuestions] = useState(initialQuestions);
   const [archive, setArchive] = useState(initialArchive);
+  const [notices, setNotices] = useState(initialNotices);
   const [toast, setToast] = useState("");
 
   const notify = (message: string) => {
@@ -180,7 +181,7 @@ export function MonitoriaApp() {
         {mobileMenu && <button className="fixed inset-0 z-30 bg-overlay lg:hidden" onClick={() => setMobileMenu(false)} aria-label="Fechar menu" />}
         <main className="min-w-0 flex-1 px-4 py-7 lg:ml-72 lg:px-10 lg:py-9">
           <div className="mx-auto max-w-6xl">
-            {role === "aluno" ? <StudentArea view={studentView} setView={setStudentView} questions={questions} setQuestions={setQuestions} archive={archive} notify={notify} /> : <MonitorArea view={monitorView} setView={setMonitorView} questions={questions} setQuestions={setQuestions} archive={archive} setArchive={setArchive} notify={notify} />}
+            {role === "aluno" ? <StudentArea view={studentView} setView={setStudentView} questions={questions} setQuestions={setQuestions} archive={archive} notices={notices} notify={notify} /> : <MonitorArea view={monitorView} setView={setMonitorView} questions={questions} setQuestions={setQuestions} archive={archive} setArchive={setArchive} notices={notices} setNotices={setNotices} notify={notify} />}
           </div>
         </main>
       </div>
@@ -221,8 +222,9 @@ function StatCard({ icon: Icon, label, value, note }: { icon: typeof Inbox; labe
   return <div className="rounded-lg border bg-card p-5"><div className="flex items-start justify-between"><div><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 font-display text-3xl font-bold">{value}</p></div><span className="grid size-10 place-items-center rounded-md bg-primary-soft text-primary"><Icon className="size-5" /></span></div><p className="mt-3 text-xs text-muted-foreground">{note}</p></div>;
 }
 
-function StudentArea({ view, setView, questions, setQuestions, archive, notify }: { view: StudentView; setView: (v: StudentView) => void; questions: Question[]; setQuestions: React.Dispatch<React.SetStateAction<Question[]>>; archive: ArchiveItem[]; notify: (m: string) => void }) {
+function StudentArea({ view, setView, questions, setQuestions, archive, notices, notify }: { view: StudentView; setView: (v: StudentView) => void; questions: Question[]; setQuestions: React.Dispatch<React.SetStateAction<Question[]>>; archive: ArchiveItem[]; notices: Notice[]; notify: (m: string) => void }) {
   if (view === "acervo") return <ArchiveView archive={archive} />;
+  if (view === "avisos") return <NoticesView notices={notices} />;
   if (view === "nova") return <NewQuestion questions={questions} setQuestions={setQuestions} archive={archive} setView={setView} notify={notify} />;
   if (view === "duvidas") return <MyQuestions questions={questions.filter((q) => q.author === "Você")} />;
   if (view === "aulas") return <CollectiveClasses notify={notify} />;
