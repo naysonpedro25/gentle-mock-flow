@@ -30,8 +30,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 type Role = "aluno" | "monitor";
-type StudentView = "inicio" | "acervo" | "nova" | "duvidas" | "aulas";
-type MonitorView = "inicio" | "fila" | "aulas";
+type StudentView = "inicio" | "acervo" | "nova" | "duvidas" | "aulas" | "avisos";
+type MonitorView = "inicio" | "fila" | "aulas" | "avisos";
 type QuestionStatus = "Pendente" | "Em atendimento" | "Respondida";
 
 type Question = {
@@ -43,6 +43,15 @@ type Question = {
   monitor?: string;
   author?: string;
   time?: string;
+};
+
+type Notice = {
+  id: number;
+  author: string;
+  title: string;
+  text: string;
+  date: string;
+  time: string;
 };
 
 type ArchiveItem = {
@@ -75,12 +84,14 @@ const studentNav = [
   { id: "nova" as const, label: "Nova dúvida", icon: CircleHelp },
   { id: "duvidas" as const, label: "Minhas dúvidas", icon: MessageSquareText },
   { id: "aulas" as const, label: "Aulas coletivas", icon: Users },
+  { id: "avisos" as const, label: "Avisos", icon: Megaphone },
 ];
 
 const monitorNav = [
   { id: "inicio" as const, label: "Visão geral", icon: LayoutDashboard },
   { id: "fila" as const, label: "Fila de atendimento", icon: Inbox },
   { id: "aulas" as const, label: "Aulas coletivas", icon: Users },
+  { id: "avisos" as const, label: "Avisos", icon: Megaphone },
 ];
 
 function StatusBadge({ status }: { status: QuestionStatus }) {
