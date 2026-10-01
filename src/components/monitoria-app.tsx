@@ -181,7 +181,7 @@ export function MonitoriaApp() {
         {mobileMenu && <button className="fixed inset-0 z-30 bg-overlay lg:hidden" onClick={() => setMobileMenu(false)} aria-label="Fechar menu" />}
         <main className="min-w-0 flex-1 px-4 py-7 lg:ml-72 lg:px-10 lg:py-9">
           <div className="mx-auto max-w-6xl">
-            {role === "aluno" ? <StudentArea view={studentView} setView={setStudentView} questions={questions} setQuestions={setQuestions} archive={archive} notify={notify} /> : <MonitorArea view={monitorView} setView={setMonitorView} questions={questions} setQuestions={setQuestions} archive={archive} setArchive={setArchive} notify={notify} />}
+            {role === "aluno" ? <StudentArea view={studentView} setView={setStudentView} questions={questions} setQuestions={setQuestions} archive={archive} classes={classes} notify={notify} /> : <MonitorArea view={monitorView} setView={setMonitorView} questions={questions} setQuestions={setQuestions} archive={archive} setArchive={setArchive} classes={classes} setClasses={setClasses} notify={notify} />}
           </div>
         </main>
       </div>
