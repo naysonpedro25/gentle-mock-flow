@@ -14,7 +14,6 @@ import {
   LayoutDashboard,
   Lightbulb,
   LogOut,
-  Megaphone,
   Menu,
   MessageSquareText,
   Search,
@@ -31,8 +30,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 type Role = "aluno" | "monitor";
-type StudentView = "inicio" | "acervo" | "nova" | "duvidas" | "aulas" | "avisos";
-type MonitorView = "inicio" | "fila" | "aulas" | "avisos";
+type StudentView = "inicio" | "acervo" | "nova" | "duvidas" | "aulas";
+type MonitorView = "inicio" | "fila" | "aulas";
 type QuestionStatus = "Pendente" | "Em atendimento" | "Respondida";
 
 type Question = {
@@ -44,15 +43,6 @@ type Question = {
   monitor?: string;
   author?: string;
   time?: string;
-};
-
-type Notice = {
-  id: number;
-  author: string;
-  title: string;
-  text: string;
-  date: string;
-  time: string;
 };
 
 type ArchiveItem = {
@@ -79,26 +69,18 @@ const initialArchive: ArchiveItem[] = [
   { id: 4, subject: "Algoritmos", topic: "Grafos", title: "Como escolher entre BFS e DFS?", preview: "BFS é adequada para menores caminhos sem peso, enquanto...", answer: "Use BFS para explorar por níveis e encontrar menores caminhos em grafos sem peso. Use DFS para explorar profundamente, detectar ciclos e realizar ordenação topológica." },
 ];
 
-const initialNotices: Notice[] = [
-  { id: 1, author: "Monitor Carlos", title: "Monitoria de Algoritmos — recursão", text: "Na monitoria de amanhã vamos revisar recursão e casos base, com exercícios de fixação. Tragam suas dúvidas da lista 3.", date: "29 set 2026", time: "15h42" },
-  { id: 2, author: "Monitora Ana", title: "Aula de BD adiada", text: "A aula coletiva de Normalização foi remarcada para sexta-feira, 16h, na Sala 12 — Bloco B. O conteúdo será o mesmo.", date: "28 set 2026", time: "10h15" },
-  { id: 3, author: "Monitor Carlos", title: "Assuntos da semana", text: "Esta semana as monitorias de Algoritmos vão focar em grafos: BFS, DFS e caminhos mínimos. Atendimento normal nos horários de sempre.", date: "26 set 2026", time: "09h03" },
-];
-
 const studentNav = [
   { id: "inicio" as const, label: "Visão geral", icon: LayoutDashboard },
   { id: "acervo" as const, label: "Buscar no acervo", icon: Search },
   { id: "nova" as const, label: "Nova dúvida", icon: CircleHelp },
   { id: "duvidas" as const, label: "Minhas dúvidas", icon: MessageSquareText },
   { id: "aulas" as const, label: "Aulas coletivas", icon: Users },
-  { id: "avisos" as const, label: "Avisos", icon: Megaphone },
 ];
 
 const monitorNav = [
   { id: "inicio" as const, label: "Visão geral", icon: LayoutDashboard },
   { id: "fila" as const, label: "Fila de atendimento", icon: Inbox },
   { id: "aulas" as const, label: "Aulas coletivas", icon: Users },
-  { id: "avisos" as const, label: "Avisos", icon: Megaphone },
 ];
 
 function StatusBadge({ status }: { status: QuestionStatus }) {
@@ -123,7 +105,6 @@ export function MonitoriaApp() {
   const [mobileMenu, setMobileMenu] = useState(false);
   const [questions, setQuestions] = useState(initialQuestions);
   const [archive, setArchive] = useState(initialArchive);
-  const [notices, setNotices] = useState(initialNotices);
   const [toast, setToast] = useState("");
 
   const notify = (message: string) => {
@@ -181,7 +162,7 @@ export function MonitoriaApp() {
         {mobileMenu && <button className="fixed inset-0 z-30 bg-overlay lg:hidden" onClick={() => setMobileMenu(false)} aria-label="Fechar menu" />}
         <main className="min-w-0 flex-1 px-4 py-7 lg:ml-72 lg:px-10 lg:py-9">
           <div className="mx-auto max-w-6xl">
-            {role === "aluno" ? <StudentArea view={studentView} setView={setStudentView} questions={questions} setQuestions={setQuestions} archive={archive} notices={notices} notify={notify} /> : <MonitorArea view={monitorView} setView={setMonitorView} questions={questions} setQuestions={setQuestions} archive={archive} setArchive={setArchive} notices={notices} setNotices={setNotices} notify={notify} />}
+            {role === "aluno" ? <StudentArea view={studentView} setView={setStudentView} questions={questions} setQuestions={setQuestions} archive={archive} notify={notify} /> : <MonitorArea view={monitorView} setView={setMonitorView} questions={questions} setQuestions={setQuestions} archive={archive} setArchive={setArchive} notify={notify} />}
           </div>
         </main>
       </div>
@@ -222,9 +203,8 @@ function StatCard({ icon: Icon, label, value, note }: { icon: typeof Inbox; labe
   return <div className="rounded-lg border bg-card p-5"><div className="flex items-start justify-between"><div><p className="text-sm text-muted-foreground">{label}</p><p className="mt-2 font-display text-3xl font-bold">{value}</p></div><span className="grid size-10 place-items-center rounded-md bg-primary-soft text-primary"><Icon className="size-5" /></span></div><p className="mt-3 text-xs text-muted-foreground">{note}</p></div>;
 }
 
-function StudentArea({ view, setView, questions, setQuestions, archive, notices, notify }: { view: StudentView; setView: (v: StudentView) => void; questions: Question[]; setQuestions: React.Dispatch<React.SetStateAction<Question[]>>; archive: ArchiveItem[]; notices: Notice[]; notify: (m: string) => void }) {
+function StudentArea({ view, setView, questions, setQuestions, archive, notify }: { view: StudentView; setView: (v: StudentView) => void; questions: Question[]; setQuestions: React.Dispatch<React.SetStateAction<Question[]>>; archive: ArchiveItem[]; notify: (m: string) => void }) {
   if (view === "acervo") return <ArchiveView archive={archive} />;
-  if (view === "avisos") return <NoticesView notices={notices} />;
   if (view === "nova") return <NewQuestion questions={questions} setQuestions={setQuestions} archive={archive} setView={setView} notify={notify} />;
   if (view === "duvidas") return <MyQuestions questions={questions.filter((q) => q.author === "Você")} />;
   if (view === "aulas") return <CollectiveClasses notify={notify} />;
@@ -256,10 +236,9 @@ function CollectiveClasses({ notify }: { notify: (m: string) => void }) {
   return <><PageHeader eyebrow="Aprendizado em grupo" title="Aulas coletivas" text="Confirme presença nos encontros organizados pelos monitores." /><div className="grid gap-4 lg:grid-cols-2">{classes.map((item) => { const joined = confirmed.includes(item.id); const count = item.people + (joined ? 1 : 0); const ready = count >= item.min; return <article key={item.id} className="rounded-lg border bg-card p-5"><div className="flex items-start justify-between gap-4"><span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">{item.subject}</span>{ready && <span className="flex items-center gap-1 text-xs font-semibold text-success"><CheckCircle2 className="size-4" />Sala reservada</span>}</div><h2 className="mt-4 font-display text-lg font-bold">{item.topic}</h2><div className="mt-4 space-y-2 text-sm text-muted-foreground"><p className="flex items-center gap-2"><CalendarCheck className="size-4" />{item.date}</p><p className="flex items-center gap-2"><Users className="size-4" />{count} confirmados • mínimo {item.min}</p><p className="flex items-center gap-2"><BookOpen className="size-4" />{ready ? item.room : "Sala reservada ao atingir o mínimo"}</p></div><div className="mt-5 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary transition-all" style={{ width: `${Math.min(100, (count / item.min) * 100)}%` }} /></div><Button variant={joined ? "secondary" : "default"} className="mt-5 w-full" onClick={() => { setConfirmed((p) => joined ? p.filter((id) => id !== item.id) : [...p, item.id]); notify(joined ? "Presença removida." : "Presença confirmada!"); }}>{joined ? <><Check />Presença confirmada</> : "Confirmar presença"}</Button></article>; })}</div></>;
 }
 
-function MonitorArea({ view, setView, questions, setQuestions, archive, setArchive, notices, setNotices, notify }: { view: MonitorView; setView: (v: MonitorView) => void; questions: Question[]; setQuestions: React.Dispatch<React.SetStateAction<Question[]>>; archive: ArchiveItem[]; setArchive: React.Dispatch<React.SetStateAction<ArchiveItem[]>>; notices: Notice[]; setNotices: React.Dispatch<React.SetStateAction<Notice[]>>; notify: (m: string) => void }) {
+function MonitorArea({ view, setView, questions, setQuestions, archive, setArchive, notify }: { view: MonitorView; setView: (v: MonitorView) => void; questions: Question[]; setQuestions: React.Dispatch<React.SetStateAction<Question[]>>; archive: ArchiveItem[]; setArchive: React.Dispatch<React.SetStateAction<ArchiveItem[]>>; notify: (m: string) => void }) {
   const mine = questions.filter((q) => q.monitor === "Carlos" && q.status !== "Respondida");
   if (view === "fila") return <QueueView questions={questions} setQuestions={setQuestions} archive={archive} setArchive={setArchive} notify={notify} />;
-  if (view === "avisos") return <NoticesView notices={notices} setNotices={setNotices} notify={notify} />;
   if (view === "aulas") return <MonitorClasses notify={notify} />;
   return <><PageHeader eyebrow="Área do monitor" title="Olá, Carlos!" text="Veja sua carga de atendimento e os itens que precisam de atenção." action={<Button onClick={() => setView("fila")}><Inbox />Abrir fila</Button>} /><div className="grid gap-4 md:grid-cols-3"><StatCard icon={Inbox} label="Atribuídas a você" value={String(mine.length)} note="1 nova desde ontem" /><StatCard icon={CheckCircle2} label="Respondidas" value="24" note="Neste semestre" /><StatCard icon={TrendingUp} label="Carga atual" value={mine.length <= 3 ? "Leve" : "Moderada"} note="Distribuição equilibrada" /></div><div className="mt-7 grid gap-5 lg:grid-cols-[1.35fr_.65fr]"><section className="rounded-lg border bg-card"><div className="flex items-center justify-between border-b p-5"><div><h2 className="font-display text-lg font-bold">Próximos atendimentos</h2><p className="text-sm text-muted-foreground">Sua fila por ordem de chegada</p></div><Button variant="ghost" size="sm" onClick={() => setView("fila")}>Ver fila <ChevronRight /></Button></div><div className="divide-y">{mine.slice(0, 3).map((q) => <div key={q.id} className="flex items-center gap-4 p-5"><span className="grid size-9 shrink-0 place-items-center rounded-md bg-primary-soft text-sm font-bold text-primary">{q.author?.[0]}</span><div className="min-w-0 flex-1"><p className="truncate font-semibold">{q.title}</p><p className="mt-1 text-xs text-muted-foreground">{q.author} • {q.subject} • {q.time}</p></div><ChevronRight className="size-4 text-muted-foreground" /></div>)}</div></section><section className="rounded-lg border border-warning/25 bg-warning-soft p-5"><div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-md bg-warning/15 text-warning"><Sparkles className="size-5" /></span><div><p className="text-xs font-bold uppercase text-warning">Tópico frequente detectado</p><h2 className="mt-1 font-display text-lg font-bold">Recursão</h2></div></div><p className="mt-4 text-sm leading-relaxed text-muted-foreground">4 alunos enviaram dúvidas sobre o mesmo tema nos últimos dias.</p><Button variant="outline" className="mt-5 w-full bg-card" onClick={() => setView("aulas")}><Users />Criar aula coletiva</Button></section></div></>;
 }
@@ -272,36 +251,7 @@ function QueueView({ questions, setQuestions, archive, setArchive, notify }: { q
   return <><PageHeader eyebrow="Atendimentos" title="Fila de dúvidas" text="Priorize, responda ou reatribua os chamados da disciplina." /><div className="mb-5 inline-flex rounded-md bg-muted p-1"><Button size="sm" variant={tab === "mine" ? "default" : "ghost"} onClick={() => setTab("mine")}>Atribuídas a mim <span className="ml-1 rounded-full bg-primary-foreground/15 px-1.5">{questions.filter((q) => q.monitor === "Carlos" && q.status !== "Respondida").length}</span></Button><Button size="sm" variant={tab === "all" ? "default" : "ghost"} onClick={() => setTab("all")}>Fila geral <span className="ml-1 rounded-full bg-primary-foreground/15 px-1.5">{questions.filter((q) => q.status !== "Respondida").length}</span></Button></div><div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><div className="space-y-3">{list.map((q) => <button type="button" key={q.id} onClick={() => { setSelected(q.id); setQuestions((prev) => prev.map((item) => item.id === q.id && item.status === "Pendente" ? { ...item, status: "Em atendimento" } : item)); }} className={cn("w-full rounded-lg border bg-card p-4 text-left transition-all hover:border-primary/40", selected === q.id && "border-primary ring-2 ring-primary/10")}><div className="flex items-center justify-between gap-3"><span className="text-xs font-semibold text-primary">{q.subject}</span><StatusBadge status={q.status} /></div><p className="mt-3 font-semibold leading-snug">{q.title}</p><p className="mt-2 text-xs text-muted-foreground">{q.author} • {q.time} {tab === "all" && `• Monitor ${q.monitor}`}</p></button>)}{list.length === 0 && <EmptyState title="Fila em dia" text="Não há chamados aguardando atendimento." />}</div><div>{current ? <div className="sticky top-8 rounded-lg border bg-card"><div className="border-b p-5"><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-primary-soft px-2 py-1 text-xs font-semibold text-primary">{current.subject}</span><span className="text-xs text-muted-foreground">{current.topic}</span></div><h2 className="mt-3 font-display text-xl font-bold">{current.title}</h2><p className="mt-2 text-sm text-muted-foreground">Enviada por {current.author} • {current.time}</p></div><div className="p-5"><div className="mb-5 rounded-md bg-muted/50 p-4 text-sm leading-relaxed">Estou tentando entender este assunto, mas não consegui visualizar como as etapas se conectam. Poderia explicar com um exemplo simples?</div><label className="text-sm font-semibold">Sua resposta<Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} className="mt-2 min-h-32 font-normal" placeholder="Explique o raciocínio passo a passo..." /></label><label className="mt-4 block text-sm font-semibold"><span className="flex items-center gap-2"><Code2 className="size-4" />Bloco de código (opcional)</span><Textarea value={code} onChange={(e) => setCode(e.target.value)} className="mt-2 min-h-24 bg-code font-mono text-code-foreground" placeholder="// Insira um exemplo" /></label><label className="mt-5 flex cursor-pointer items-start gap-3 rounded-md border p-3"><input type="checkbox" checked={publish} onChange={(e) => setPublish(e.target.checked)} className="mt-0.5 size-4 accent-primary" /><span><strong className="block text-sm">Publicar no acervo geral</strong><small className="text-muted-foreground">A resposta ficará disponível para dúvidas futuras.</small></span></label><div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-between"><Button variant="outline" onClick={reassign}><ArrowLeftRight />Reatribuir</Button><Button onClick={respond}><Send />Enviar resposta</Button></div></div></div> : <div className="rounded-lg border border-dashed bg-card px-8 py-20 text-center"><MessageSquareText className="mx-auto size-9 text-muted-foreground/50" /><h2 className="mt-4 font-semibold">Selecione um chamado</h2><p className="mt-1 text-sm text-muted-foreground">A dúvida completa e as opções de resposta aparecerão aqui.</p></div>}</div></div></>;
 }
 
-function NoticesView({ notices, setNotices, notify }: { notices: Notice[]; setNotices?: React.Dispatch<React.SetStateAction<Notice[]>>; notify?: (m: string) => void }) {
-  const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
-  const canPost = Boolean(setNotices && notify);
-  const publish = () => {
-    if (!title.trim() || !text.trim()) { notify?.("Preencha o título e o conteúdo do aviso."); return; }
-    const now = new Date();
-    const date = now.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-    const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }).replace(":", "h");
-    setNotices?.((prev) => [{ id: Date.now(), author: "Monitor Carlos", title: title.trim(), text: text.trim(), date, time }, ...prev]);
-    setTitle(""); setText("");
-    notify?.("Aviso publicado para todos os alunos.");
-  };
-  return <><PageHeader eyebrow="Comunicação" title="Avisos da monitoria" text={canPost ? "Publique informações sobre aulas, assuntos abordados e monitorias para todos os alunos." : "Informações publicadas pelos monitores sobre aulas, assuntos e monitorias."} />
-    {canPost && <div className="mb-6 rounded-lg border bg-card p-5 sm:p-6"><div className="flex items-center gap-2"><Megaphone className="size-4 text-primary" /><h2 className="text-sm font-bold">Novo aviso</h2></div><label className="mt-4 block text-sm font-semibold">Título<Input value={title} onChange={(e) => setTitle(e.target.value)} className="mt-2 h-10 font-normal" placeholder="Ex.: Monitoria de sexta — revisão de grafos" maxLength={100} /></label><label className="mt-4 block text-sm font-semibold">Conteúdo<Textarea value={text} onChange={(e) => setText(e.target.value)} className="mt-2 min-h-28 font-normal" placeholder="Descreva as informações sobre a aula, assunto ou monitoria..." maxLength={1000} /></label><div className="mt-5 flex justify-end"><Button onClick={publish}><Send />Publicar aviso</Button></div></div>}
-    <div className="space-y-3">{notices.map((n) => <article key={n.id} className="rounded-lg border bg-card p-5"><div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center"><div className="flex items-center gap-2"><span className="grid size-8 place-items-center rounded-md bg-primary-soft text-primary"><Megaphone className="size-4" /></span><span className="text-xs font-semibold text-primary">{n.author}</span></div><span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Clock3 className="size-3.5" />{n.date} às {n.time}</span></div><h2 className="mt-3 font-display text-lg font-bold">{n.title}</h2><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{n.text}</p></article>)}{notices.length === 0 && <EmptyState title="Nenhum aviso publicado" text="Quando um monitor publicar um aviso, ele aparecerá aqui." />}</div></>;
-}
-
 function MonitorClasses({ notify }: { notify: (m: string) => void }) {
   const [created, setCreated] = useState(false);
-  const [slot, setSlot] = useState<number | null>(null);
-  const slots = [
-    { date: "30 set", time: "14h – 15h30", room: "Sala 12 — Bloco B", capacity: 20, free: true },
-    { date: "30 set", time: "16h – 17h30", room: "Sala 07 — Bloco A", capacity: 15, free: true },
-    { date: "01 out", time: "08h – 09h30", room: "Lab 3 — Bloco C", capacity: 30, free: false },
-    { date: "01 out", time: "10h – 11h30", room: "Sala 12 — Bloco B", capacity: 20, free: true },
-    { date: "02 out", time: "14h – 15h30", room: "Auditório — Bloco A", capacity: 60, free: true },
-    { date: "02 out", time: "16h – 17h30", room: "Sala 05 — Bloco B", capacity: 12, free: false },
-  ];
-  const chosen = slot !== null ? slots[slot] : null;
-  const schedule = () => { if (chosen) { setCreated(true); notify(`Aula criada e ${chosen.room.split(" — ")[0]} reservada!`); } };
-  return <><PageHeader eyebrow="Automação de encontros" title="Aulas coletivas" text="Transforme tópicos recorrentes em um atendimento para vários alunos." /><div className="rounded-lg border border-warning/25 bg-warning-soft p-6"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div className="flex gap-4"><span className="grid size-11 shrink-0 place-items-center rounded-md bg-warning/15 text-warning"><Sparkles className="size-5" /></span><div><p className="text-xs font-bold uppercase text-warning">Tópico frequente detectado</p><h2 className="mt-1 font-display text-xl font-bold">Recursão e casos base</h2><p className="mt-2 text-sm text-muted-foreground">4 dúvidas relacionadas nos últimos 3 dias • Algoritmos</p></div></div>{created ? <span className="flex items-center gap-2 font-semibold text-success"><CheckCircle2 />Aula agendada</span> : <Button onClick={schedule} disabled={!chosen}><Users />Converter em aula coletiva</Button>}</div></div><div className="mt-5 overflow-hidden rounded-lg border bg-card"><div className="border-b p-5"><h2 className="font-display text-lg font-bold">Horários e salas disponíveis</h2><p className="text-sm text-muted-foreground">{created ? "Reserva confirmada para o horário escolhido." : "Selecione um horário para reservar a sala da aula coletiva."}</p></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b bg-muted/40 text-left text-xs uppercase text-muted-foreground"><th className="px-5 py-3 font-semibold">Data</th><th className="px-5 py-3 font-semibold">Horário</th><th className="px-5 py-3 font-semibold">Sala</th><th className="px-5 py-3 font-semibold">Capacidade</th><th className="px-5 py-3 font-semibold">Situação</th><th className="px-5 py-3" /></tr></thead><tbody className="divide-y">{slots.map((s, i) => { const isChosen = created ? chosen === s : slot === i; const reserved = created && chosen === s; return <tr key={i} className={cn("transition-colors", isChosen ? "bg-primary-soft/60" : s.free ? "hover:bg-muted/30" : "opacity-60")}><td className="px-5 py-3.5 font-semibold">{s.date}</td><td className="px-5 py-3.5">{s.time}</td><td className="px-5 py-3.5">{s.room}</td><td className="px-5 py-3.5">{s.capacity} lugares</td><td className="px-5 py-3.5">{reserved ? <span className="rounded-full bg-success-soft px-2.5 py-1 text-xs font-semibold text-success">Reservada</span> : s.free ? <span className="rounded-full bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Disponível</span> : <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">Ocupada</span>}</td><td className="px-5 py-3.5 text-right">{!created && s.free && <Button size="sm" variant={isChosen ? "default" : "outline"} onClick={() => setSlot(i)}>{isChosen ? "Selecionado" : "Selecionar"}</Button>}{reserved && <CheckCircle2 className="ml-auto size-5 text-success" />}</td></tr>; })}</tbody></table></div></div>{created && chosen && <div className="mt-5 rounded-lg border bg-card p-6"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-md bg-success-soft text-success"><CalendarCheck className="size-5" /></span><div><p className="font-semibold">Aula coletiva agendada</p><p className="text-sm text-muted-foreground">Convites enviados aos alunos interessados.</p></div></div><div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Data e horário</p><p className="mt-1 text-sm font-semibold">{chosen.date} • {chosen.time}</p></div><div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Local</p><p className="mt-1 text-sm font-semibold">{chosen.room}</p></div><div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Convidados</p><p className="mt-1 text-sm font-semibold">4 alunos</p></div></div></div>}</>;
+  return <><PageHeader eyebrow="Automação de encontros" title="Aulas coletivas" text="Transforme tópicos recorrentes em um atendimento para vários alunos." /><div className="rounded-lg border border-warning/25 bg-warning-soft p-6"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div className="flex gap-4"><span className="grid size-11 shrink-0 place-items-center rounded-md bg-warning/15 text-warning"><Sparkles className="size-5" /></span><div><p className="text-xs font-bold uppercase text-warning">Tópico frequente detectado</p><h2 className="mt-1 font-display text-xl font-bold">Recursão e casos base</h2><p className="mt-2 text-sm text-muted-foreground">4 dúvidas relacionadas nos últimos 3 dias • Algoritmos</p></div></div>{created ? <span className="flex items-center gap-2 font-semibold text-success"><CheckCircle2 />Aula agendada</span> : <Button onClick={() => { setCreated(true); notify("Aula criada e Sala 12 reservada!"); }}><Users />Converter em aula coletiva</Button>}</div></div>{created && <div className="mt-5 rounded-lg border bg-card p-6"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-md bg-success-soft text-success"><CalendarCheck className="size-5" /></span><div><p className="font-semibold">Aula coletiva agendada</p><p className="text-sm text-muted-foreground">Convites enviados aos alunos interessados.</p></div></div><div className="mt-5 grid gap-3 sm:grid-cols-3"><div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Data e horário</p><p className="mt-1 text-sm font-semibold">30 set • 14h</p></div><div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Local</p><p className="mt-1 text-sm font-semibold">Sala 12 — Bloco B</p></div><div className="rounded-md bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Convidados</p><p className="mt-1 text-sm font-semibold">4 alunos</p></div></div></div>}</>;
 }
