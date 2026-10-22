@@ -1,29 +1,33 @@
-# Welcome to your Lovable project
+# Monitora IC
 
-This project was built with [Lovable](https://lovable.dev).
+Protótipo client-only de uma central acadêmica para dúvidas e atendimentos de monitoria. Os dados são mantidos em memória e não há serviços externos nem persistência.
 
-## Build with Lovable
+## Desenvolvimento
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Use Node.js e pnpm:
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-## Built with
+## Scripts
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+- `pnpm dev` inicia o servidor de desenvolvimento.
+- `pnpm build` cria a versão de produção.
+- `pnpm start` serve a versão de produção.
+- `pnpm lint` executa o ESLint.
+
+## Rotas
+
+- `/login` — acesso de demonstração para aluno ou monitor.
+- `/aluno` — visão geral do aluno.
+- `/aluno/acervo` — busca de respostas anteriores.
+- `/aluno/nova-duvida` — envio de uma dúvida.
+- `/aluno/duvidas` — acompanhamento das dúvidas enviadas.
+- `/aluno/aulas` — aulas coletivas disponíveis.
+- `/monitor` — visão geral do monitor.
+- `/monitor/fila` — fila de atendimento.
+- `/monitor/aulas` — criação de aulas coletivas.
+
+O estado de sessão e os dados de demonstração permanecem apenas em memória; atualizar a página reinicia o protótipo.

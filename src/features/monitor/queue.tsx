@@ -1,0 +1,208 @@
+import { useState } from "react";
+import { ArrowLeftRight, Code2, MessageSquareText, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { ArchiveItem, Question } from "@/lib/mock-data";
+import { EmptyState, PageHeader, StatusBadge } from "@/components/shared-ui";
+
+export function QueueView({
+  questions,
+  setQuestions,
+  archive,
+  setArchive,
+  notify,
+}: {
+  questions: Question[];
+  setQuestions: React.Dispatch<React.SetStateAction<Question[]>>;
+  archive: ArchiveItem[];
+  setArchive: React.Dispatch<React.SetStateAction<ArchiveItem[]>>;
+  notify: (m: string) => void;
+}) {
+  const [tab, setTab] = useState<"mine" | "all">("mine");
+  const [selected, setSelected] = useState<number | null>(null);
+  const [answer, setAnswer] = useState("");
+  const [code, setCode] = useState("");
+  const [publish, setPublish] = useState(true);
+  const list = questions.filter(
+    (q) => q.status !== "Respondida" && (tab === "all" || q.monitor === "Carlos"),
+  );
+  const current = questions.find((q) => q.id === selected);
+  const respond = () => {
+    if (!current || !answer.trim()) {
+      notify("Digite uma resposta antes de concluir.");
+      return;
+    }
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === current.id ? { ...q, status: "Respondida" } : q)),
+    );
+    if (publish)
+      setArchive((prev) => [
+        {
+          id: Date.now(),
+          subject: current.subject,
+          topic: current.topic,
+          title: current.title,
+          preview: answer.slice(0, 90),
+          answer: answer + (code ? `\n\nExemplo de código:\n${code}` : ""),
+        },
+        ...prev,
+      ]);
+    setSelected(null);
+    setAnswer("");
+    setCode("");
+    notify(publish ? "Resposta enviada e publicada no acervo." : "Resposta enviada ao aluno.");
+  };
+  const reassign = () => {
+    if (!current) return;
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === current.id ? { ...q, monitor: "Ana", status: "Pendente" } : q)),
+    );
+    setSelected(null);
+    notify("Chamado reatribuído para Ana.");
+  };
+  return (
+    <>
+      <PageHeader
+        eyebrow="Atendimentos"
+        title="Fila de dúvidas"
+        text="Priorize, responda ou reatribua os chamados da disciplina."
+      />
+      <div className="mb-5 inline-flex rounded-md bg-muted p-1">
+        <Button
+          size="sm"
+          variant={tab === "mine" ? "default" : "ghost"}
+          onClick={() => setTab("mine")}
+        >
+          Atribuídas a mim{" "}
+          <span className="ml-1 rounded-full bg-primary-foreground/15 px-1.5">
+            {questions.filter((q) => q.monitor === "Carlos" && q.status !== "Respondida").length}
+          </span>
+        </Button>
+        <Button
+          size="sm"
+          variant={tab === "all" ? "default" : "ghost"}
+          onClick={() => setTab("all")}
+        >
+          Fila geral{" "}
+          <span className="ml-1 rounded-full bg-primary-foreground/15 px-1.5">
+            {questions.filter((q) => q.status !== "Respondida").length}
+          </span>
+        </Button>
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+        <div className="space-y-3">
+          {list.map((q) => (
+            <button
+              type="button"
+              key={q.id}
+              onClick={() => {
+                setSelected(q.id);
+                setQuestions((prev) =>
+                  prev.map((item) =>
+                    item.id === q.id && item.status === "Pendente"
+                      ? { ...item, status: "Em atendimento" }
+                      : item,
+                  ),
+                );
+              }}
+              className={cn(
+                "w-full rounded-lg border bg-card p-4 text-left transition-all hover:border-primary/40",
+                selected === q.id && "border-primary ring-2 ring-primary/10",
+              )}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-primary">{q.subject}</span>
+                <StatusBadge status={q.status} />
+              </div>
+              <p className="mt-3 font-semibold leading-snug">{q.title}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {q.author} • {q.time} {tab === "all" && `• Monitor ${q.monitor}`}
+              </p>
+            </button>
+          ))}
+          {list.length === 0 && (
+            <EmptyState title="Fila em dia" text="Não há chamados aguardando atendimento." />
+          )}
+        </div>
+        <div>
+          {current ? (
+            <div className="sticky top-8 rounded-lg border bg-card">
+              <div className="border-b p-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-primary-soft px-2 py-1 text-xs font-semibold text-primary">
+                    {current.subject}
+                  </span>
+                  <span className="text-xs text-muted-foreground">{current.topic}</span>
+                </div>
+                <h2 className="mt-3 font-display text-xl font-bold">{current.title}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Enviada por {current.author} • {current.time}
+                </p>
+              </div>
+              <div className="p-5">
+                <div className="mb-5 rounded-md bg-muted/50 p-4 text-sm leading-relaxed">
+                  Estou tentando entender este assunto, mas não consegui visualizar como as etapas
+                  se conectam. Poderia explicar com um exemplo simples?
+                </div>
+                <label className="text-sm font-semibold">
+                  Sua resposta
+                  <Textarea
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    className="mt-2 min-h-32 font-normal"
+                    placeholder="Explique o raciocínio passo a passo..."
+                  />
+                </label>
+                <label className="mt-4 block text-sm font-semibold">
+                  <span className="flex items-center gap-2">
+                    <Code2 className="size-4" />
+                    Bloco de código (opcional)
+                  </span>
+                  <Textarea
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className="mt-2 min-h-24 bg-code font-mono text-code-foreground"
+                    placeholder="// Insira um exemplo"
+                  />
+                </label>
+                <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-md border p-3">
+                  <input
+                    type="checkbox"
+                    checked={publish}
+                    onChange={(e) => setPublish(e.target.checked)}
+                    className="mt-0.5 size-4 accent-primary"
+                  />
+                  <span>
+                    <strong className="block text-sm">Publicar no acervo geral</strong>
+                    <small className="text-muted-foreground">
+                      A resposta ficará disponível para dúvidas futuras.
+                    </small>
+                  </span>
+                </label>
+                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+                  <Button variant="outline" onClick={reassign}>
+                    <ArrowLeftRight />
+                    Reatribuir
+                  </Button>
+                  <Button onClick={respond}>
+                    <Send />
+                    Enviar resposta
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed bg-card px-8 py-20 text-center">
+              <MessageSquareText className="mx-auto size-9 text-muted-foreground/50" />
+              <h2 className="mt-4 font-semibold">Selecione um chamado</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                A dúvida completa e as opções de resposta aparecerão aqui.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

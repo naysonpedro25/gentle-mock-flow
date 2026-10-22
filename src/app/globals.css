@@ -1,5 +1,5 @@
 @import "tailwindcss" source(none);
-@source "../src";
+@source "..";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -167,5 +167,10 @@
     letter-spacing: 0;
   }
 
-  button, input, textarea, select { letter-spacing: 0; }
+  button,
+  input,
+  textarea,
+  select {
+    letter-spacing: 0;
+  }
 }
