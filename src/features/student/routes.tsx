@@ -47,11 +47,24 @@ export function NewQuestionRoute() {
 }
 
 export function MyQuestionsRoute() {
+  const router = useRouter();
   const { questions } = usePrototype();
-  return <MyQuestions questions={questions.filter((question) => question.author === "Você")} />;
+  return (
+    <MyQuestions
+      questions={questions.filter((question) => question.author === "Você")}
+      onCreate={() => router.push(studentPaths.nova)}
+    />
+  );
 }
 
 export function StudentClassesRoute() {
-  const { classes, notify } = usePrototype();
-  return <CollectiveClasses classes={classes} notify={notify} />;
+  const { classes, confirmedClassIds, setConfirmedClassIds, notify } = usePrototype();
+  return (
+    <CollectiveClasses
+      classes={classes}
+      confirmed={confirmedClassIds}
+      setConfirmed={setConfirmedClassIds}
+      notify={notify}
+    />
+  );
 }

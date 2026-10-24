@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { ArrowLeftRight, Code2, MessageSquareText, Send } from "lucide-react";
+import { ArrowsLeftRight, Code, PaperPlaneTilt } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { ArchiveItem, Question } from "@/lib/mock-data";
-import { EmptyState, PageHeader, StatusBadge } from "@/components/shared-ui";
+import type { ArchiveItem, Question } from "@/lib/mock-data";
+import { EmptyState, PageHeader, StatusMarker } from "@/components/shared-ui";
 
 export function QueueView({
   questions,
@@ -61,6 +61,11 @@ export function QueueView({
     setSelected(null);
     notify("Chamado reatribuído para Ana.");
   };
+  const mineCount = questions.filter(
+    (question) => question.monitor === "Carlos" && question.status !== "Respondida",
+  ).length;
+  const allCount = questions.filter((question) => question.status !== "Respondida").length;
+
   return (
     <>
       <PageHeader
@@ -68,34 +73,41 @@ export function QueueView({
         title="Fila de dúvidas"
         text="Priorize, responda ou reatribua os chamados da disciplina."
       />
-      <div className="mb-5 inline-flex rounded-md bg-muted p-1">
+      <div
+        className="mb-5 flex gap-6 border-b border-border"
+        role="group"
+        aria-label="Filtrar fila"
+      >
         <Button
-          size="sm"
-          variant={tab === "mine" ? "default" : "ghost"}
+          aria-pressed={tab === "mine"}
+          className={cn(
+            "h-11 rounded-none border-b-2 border-transparent px-0 text-muted-foreground",
+            tab === "mine" && "border-primary text-primary",
+          )}
+          variant="ghost"
           onClick={() => setTab("mine")}
         >
-          Atribuídas a mim{" "}
-          <span className="ml-1 rounded-full bg-primary-foreground/15 px-1.5">
-            {questions.filter((q) => q.monitor === "Carlos" && q.status !== "Respondida").length}
-          </span>
+          Atribuídas a mim <span className="tabular-nums">{mineCount}</span>
         </Button>
         <Button
-          size="sm"
-          variant={tab === "all" ? "default" : "ghost"}
+          aria-pressed={tab === "all"}
+          className={cn(
+            "h-11 rounded-none border-b-2 border-transparent px-0 text-muted-foreground",
+            tab === "all" && "border-primary text-primary",
+          )}
+          variant="ghost"
           onClick={() => setTab("all")}
         >
-          Fila geral{" "}
-          <span className="ml-1 rounded-full bg-primary-foreground/15 px-1.5">
-            {questions.filter((q) => q.status !== "Respondida").length}
-          </span>
+          Fila geral <span className="tabular-nums">{allCount}</span>
         </Button>
       </div>
       <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-        <div className="space-y-3">
+        <div className="divide-y divide-border border-y border-border">
           {list.map((q) => (
             <button
               type="button"
               key={q.id}
+              aria-pressed={selected === q.id}
               onClick={() => {
                 setSelected(q.id);
                 setQuestions((prev) =>
@@ -107,44 +119,50 @@ export function QueueView({
                 );
               }}
               className={cn(
-                "w-full rounded-lg border bg-card p-4 text-left transition-all hover:border-primary/40",
-                selected === q.id && "border-primary ring-2 ring-primary/10",
+                "w-full py-4 text-left transition-colors hover:text-primary",
+                selected === q.id && "text-primary",
               )}
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-primary">{q.subject}</span>
-                <StatusBadge status={q.status} />
+                <span className="text-sm font-semibold">
+                  {q.subject} · {q.topic}
+                </span>
+                <StatusMarker status={q.status} />
               </div>
-              <p className="mt-3 font-semibold leading-snug">{q.title}</p>
+              <p className="mt-2 font-semibold leading-snug">{q.title}</p>
               <p className="mt-2 text-xs text-muted-foreground">
-                {q.author} • {q.time} {tab === "all" && `• Monitor ${q.monitor}`}
+                {q.author} · {q.time} {tab === "all" && `· Monitor ${q.monitor}`}
               </p>
             </button>
           ))}
           {list.length === 0 && (
-            <EmptyState title="Fila em dia" text="Não há chamados aguardando atendimento." />
+            <EmptyState
+              title="Fila em dia"
+              text={
+                tab === "mine"
+                  ? "Você não tem dúvidas aguardando atendimento."
+                  : "Não há chamados aguardando atendimento."
+              }
+            />
           )}
         </div>
         <div>
           {current ? (
-            <div className="sticky top-8 rounded-lg border bg-card">
-              <div className="border-b p-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-primary-soft px-2 py-1 text-xs font-semibold text-primary">
-                    {current.subject}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{current.topic}</span>
-                </div>
-                <h2 className="mt-3 font-display text-xl font-bold">{current.title}</h2>
+            <div className="sticky top-8">
+              <div className="border-b border-border pb-5">
+                <p className="text-sm font-medium text-primary">
+                  {current.subject} · {current.topic}
+                </p>
+                <h2 className="mt-2 font-display text-xl font-bold">{current.title}</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Enviada por {current.author} • {current.time}
+                  Enviada por {current.author} · {current.time}
                 </p>
               </div>
-              <div className="p-5">
-                <div className="mb-5 rounded-md bg-muted/50 p-4 text-sm leading-relaxed">
-                  Estou tentando entender este assunto, mas não consegui visualizar como as etapas
-                  se conectam. Poderia explicar com um exemplo simples?
-                </div>
+              <div className="py-5">
+                <p className="mb-5 max-w-prose text-sm leading-relaxed text-muted-foreground">
+                  {current.description ||
+                    "O aluno ainda não adicionou uma descrição detalhada para esta dúvida."}
+                </p>
                 <label className="text-sm font-semibold">
                   Sua resposta
                   <Textarea
@@ -156,7 +174,7 @@ export function QueueView({
                 </label>
                 <label className="mt-4 block text-sm font-semibold">
                   <span className="flex items-center gap-2">
-                    <Code2 className="size-4" />
+                    <Code aria-hidden="true" />
                     Bloco de código (opcional)
                   </span>
                   <Textarea
@@ -166,7 +184,7 @@ export function QueueView({
                     placeholder="// Insira um exemplo"
                   />
                 </label>
-                <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-md border p-3">
+                <label className="mt-5 flex cursor-pointer items-start gap-3 border-y border-border py-3">
                   <input
                     type="checkbox"
                     checked={publish}
@@ -176,30 +194,27 @@ export function QueueView({
                   <span>
                     <strong className="block text-sm">Publicar no acervo geral</strong>
                     <small className="text-muted-foreground">
-                      A resposta ficará disponível para dúvidas futuras.
+                      Outros alunos poderão consultar.
                     </small>
                   </span>
                 </label>
                 <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
                   <Button variant="outline" onClick={reassign}>
-                    <ArrowLeftRight />
+                    <ArrowsLeftRight aria-hidden="true" />
                     Reatribuir
                   </Button>
                   <Button onClick={respond}>
-                    <Send />
+                    <PaperPlaneTilt aria-hidden="true" />
                     Enviar resposta
                   </Button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="rounded-lg border border-dashed bg-card px-8 py-20 text-center">
-              <MessageSquareText className="mx-auto size-9 text-muted-foreground/50" />
-              <h2 className="mt-4 font-semibold">Selecione um chamado</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                A dúvida completa e as opções de resposta aparecerão aqui.
-              </p>
-            </div>
+            <EmptyState
+              title="Escolha uma dúvida"
+              text="Selecione um chamado na fila para ler a descrição e escrever uma resposta."
+            />
           )}
         </div>
       </div>

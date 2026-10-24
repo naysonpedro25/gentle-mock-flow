@@ -15,6 +15,7 @@ export type Question = {
   monitor?: string;
   author?: string;
   time?: string;
+  description?: string;
 };
 
 export type ArchiveItem = {
@@ -44,8 +45,8 @@ export const initialClasses: ClassSession[] = [
     id: 1,
     subject: "Algoritmos",
     topic: "Recursão e análise de complexidade",
-    date: "30 set",
-    time: "14h",
+    date: "2026-10-30",
+    time: "14:00",
     room: "Sala 12 — Bloco B",
     description: "Revisão dos casos base e da pilha de chamadas com exercícios guiados.",
     people: 7,
@@ -56,8 +57,8 @@ export const initialClasses: ClassSession[] = [
     id: 2,
     subject: "Banco de Dados",
     topic: "Normalização e modelagem relacional",
-    date: "02 out",
-    time: "16h",
+    date: "2026-11-02",
+    time: "16:00",
     room: "Laboratório 3",
     description: "Da primeira à terceira forma normal com exemplos de modelagem.",
     people: 3,
@@ -76,6 +77,8 @@ export const initialQuestions: Question[] = [
     monitor: "Carlos",
     author: "Marina",
     time: "há 18 min",
+    description:
+      "Estou implementando uma busca binária recursiva e não entendi como atualizar os limites em cada chamada. Como a função sabe quando parar?",
   },
   {
     id: 2,
@@ -86,6 +89,8 @@ export const initialQuestions: Question[] = [
     monitor: "Ana",
     author: "Pedro",
     time: "há 32 min",
+    description:
+      "Sei que pilhas seguem LIFO e filas seguem FIFO, mas gostaria de entender em que situação real cada uma é mais adequada.",
   },
   {
     id: 3,
@@ -96,6 +101,8 @@ export const initialQuestions: Question[] = [
     monitor: "Carlos",
     author: "Você",
     time: "ontem",
+    description:
+      "Tenho uma tabela de pedidos e outra de clientes. Em quais situações devo relacioná-las usando uma chave estrangeira?",
   },
   {
     id: 4,
@@ -106,6 +113,8 @@ export const initialQuestions: Question[] = [
     monitor: "Carlos",
     author: "Lucas",
     time: "há 1h",
+    description:
+      "Estou analisando Dijkstra e fiquei em dúvida sobre a complexidade quando uso uma fila de prioridade.",
   },
   {
     id: 5,
@@ -116,6 +125,8 @@ export const initialQuestions: Question[] = [
     monitor: "Ana",
     author: "Bianca",
     time: "há 2h",
+    description:
+      "Tenho dificuldade para identificar dependências funcionais e decompor uma tabela até a terceira forma normal.",
   },
 ];
 

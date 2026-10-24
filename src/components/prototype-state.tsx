@@ -28,6 +28,8 @@ type PrototypeState = {
   setArchive: Dispatch<SetStateAction<ArchiveItem[]>>;
   classes: ClassSession[];
   setClasses: Dispatch<SetStateAction<ClassSession[]>>;
+  confirmedClassIds: number[];
+  setConfirmedClassIds: Dispatch<SetStateAction<number[]>>;
   signIn: (email: string, role: Role) => string | null;
   signOut: () => void;
   notify: (message: string) => void;
@@ -41,6 +43,7 @@ export function PrototypeProvider({ children }: { children: ReactNode }) {
   const [questions, setQuestions] = useState(initialQuestions);
   const [archive, setArchive] = useState(initialArchive);
   const [classes, setClasses] = useState(initialClasses);
+  const [confirmedClassIds, setConfirmedClassIds] = useState<number[]>([]);
   const [toast, setToast] = useState("");
   const toastTimeout = useRef<number | null>(null);
 
@@ -72,6 +75,8 @@ export function PrototypeProvider({ children }: { children: ReactNode }) {
         setArchive,
         classes,
         setClasses,
+        confirmedClassIds,
+        setConfirmedClassIds,
         signIn,
         signOut,
         notify,

@@ -1,24 +1,17 @@
-import {
-  CalendarCheck,
-  CheckCircle2,
-  ChevronRight,
-  CircleHelp,
-  Clock3,
-  Lightbulb,
-  Search,
-} from "lucide-react";
+import { CaretRight, Question, MagnifyingGlass } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { Question, StudentView } from "@/lib/mock-data";
-import { PageHeader, StatCard, StatusBadge } from "@/components/shared-ui";
+import type { Question as StudentQuestion, StudentView } from "@/lib/mock-data";
+import { EmptyState, PageHeader, StatCard, StatusMarker } from "@/components/shared-ui";
 
 export function StudentDashboard({
   setView,
   questions,
 }: {
-  setView: (v: StudentView) => void;
-  questions: Question[];
+  setView: (view: StudentView) => void;
+  questions: StudentQuestion[];
 }) {
-  const mine = questions.filter((q) => q.author === "Você");
+  const mine = questions.filter((question) => question.author === "Você");
+
   return (
     <>
       <PageHeader
@@ -27,75 +20,82 @@ export function StudentDashboard({
         text="Acompanhe suas dúvidas e encontre respostas rapidamente."
         action={
           <Button onClick={() => setView("nova")}>
-            <CircleHelp />
+            <Question aria-hidden="true" />
             Nova dúvida
           </Button>
         }
       />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="mb-9 grid divide-y divide-border border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <StatCard
-          icon={Clock3}
           label="Dúvidas em aberto"
-          value={String(mine.filter((q) => q.status !== "Respondida").length)}
+          value={String(mine.filter((question) => question.status !== "Respondida").length)}
           note="Acompanhamento em tempo real"
         />
         <StatCard
-          icon={CheckCircle2}
           label="Respondidas"
-          value={String(mine.filter((q) => q.status === "Respondida").length)}
+          value={String(mine.filter((question) => question.status === "Respondida").length)}
           note="No semestre atual"
         />
-        <StatCard
-          icon={CalendarCheck}
-          label="Próxima monitoria"
-          value="Qua, 14h"
-          note="Sala 12 • Bloco B"
-        />
+        <StatCard label="Próxima monitoria" value="Qua, 14h" note="Sala 12 · Bloco B" />
       </div>
-      <section className="mt-7 grid gap-5 lg:grid-cols-[1.35fr_.65fr]">
-        <div className="rounded-lg border bg-card">
-          <div className="flex items-center justify-between border-b p-5">
+      <section className="grid gap-10 lg:grid-cols-[1.35fr_.65fr]">
+        <div>
+          <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
             <div>
               <h2 className="font-display text-lg font-bold">Suas dúvidas recentes</h2>
-              <p className="text-sm text-muted-foreground">Últimas movimentações</p>
+              <p className="mt-1 text-sm text-muted-foreground">Últimas movimentações</p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setView("duvidas")}>
-              Ver todas <ChevronRight />
-            </Button>
+            {mine.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => setView("duvidas")}>
+                Ver todas <CaretRight aria-hidden="true" />
+              </Button>
+            )}
           </div>
-          <div className="divide-y">
-            {mine.map((q) => (
-              <div
-                key={q.id}
-                className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-semibold">{q.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {q.subject} • {q.monitor ? `Monitor ${q.monitor}` : "Aguardando monitor"}
-                  </p>
+          {mine.length > 0 ? (
+            <div className="divide-y divide-border">
+              {mine.slice(0, 4).map((question) => (
+                <div
+                  key={question.id}
+                  className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold">{question.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {question.subject} ·{" "}
+                      {question.monitor ? `Monitor ${question.monitor}` : "Aguardando monitor"}
+                    </p>
+                  </div>
+                  <StatusMarker status={question.status} />
                 </div>
-                <StatusBadge status={q.status} />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-5">
+              <EmptyState
+                title="Ainda não há dúvidas enviadas"
+                text="Descreva o ponto em que travou para receber ajuda da monitoria."
+              />
+              <Button className="mt-4" onClick={() => setView("nova")}>
+                <Question aria-hidden="true" />
+                Enviar primeira dúvida
+              </Button>
+            </div>
+          )}
         </div>
-        <div className="rounded-lg border bg-primary-soft p-5">
-          <Lightbulb className="size-6 text-primary" />
-          <h2 className="mt-4 font-display text-lg font-bold">Antes de perguntar</h2>
+        <aside className="border-t-2 border-primary pt-4 lg:mt-1">
+          <h2 className="font-display text-lg font-bold">Já pesquisou no acervo?</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            O acervo reúne respostas de semestres anteriores. Sua dúvida pode já estar resolvida por
-            lá.
+            Respostas de semestres anteriores podem resolver a dúvida sem esperar um atendimento.
           </p>
           <Button
-            variant="outline"
-            className="mt-5 w-full bg-card"
+            variant="link"
+            className="mt-3 h-auto justify-start px-0 py-2"
             onClick={() => setView("acervo")}
           >
-            <Search />
             Buscar no acervo
+            <MagnifyingGlass aria-hidden="true" />
           </Button>
-        </div>
+        </aside>
       </section>
     </>
   );

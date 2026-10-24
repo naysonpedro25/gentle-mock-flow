@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { BookOpen, CalendarCheck, CheckCircle2, Users } from "lucide-react";
+import { BookOpen, CalendarCheck, CheckCircle, Users } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ClassSession } from "@/lib/mock-data";
+import { formatClassDate, formatClassTime } from "@/lib/class-format";
+import type { ClassSession } from "@/lib/mock-data";
 import { EmptyState, PageHeader } from "@/components/shared-ui";
 
 export function MonitorClasses({
@@ -13,7 +14,7 @@ export function MonitorClasses({
 }: {
   classes: ClassSession[];
   setClasses: React.Dispatch<React.SetStateAction<ClassSession[]>>;
-  notify: (m: string) => void;
+  notify: (message: string) => void;
 }) {
   const [subject, setSubject] = useState("Algoritmos");
   const [topic, setTopic] = useState("");
@@ -24,24 +25,24 @@ export function MonitorClasses({
   const [min, setMin] = useState("5");
 
   const create = () => {
-    if (!topic.trim() || !date.trim() || !time.trim() || !room.trim()) {
+    if (!topic.trim() || !date || !time || !room.trim()) {
       notify("Preencha tema, data, horário e sala para criar a aula.");
       return;
     }
-    setClasses((prev) => [
+    setClasses((previous) => [
       {
         id: Date.now(),
         subject,
         topic: topic.trim(),
-        date: date.trim(),
-        time: time.trim(),
+        date,
+        time,
         room: room.trim(),
         description: description.trim() || "Encontro aberto a todos os alunos da disciplina.",
         people: 0,
         min: Math.max(1, Number(min) || 5),
         monitor: "Carlos",
       },
-      ...prev,
+      ...previous,
     ]);
     setTopic("");
     setDate("");
@@ -49,29 +50,39 @@ export function MonitorClasses({
     setRoom("");
     setDescription("");
     setMin("5");
-    notify("Aula coletiva criada! Os alunos já podem confirmar presença.");
+    notify("Aula coletiva criada. Os alunos já podem confirmar presença.");
   };
+
+  const mine = classes.filter((item) => item.monitor === "Carlos");
 
   return (
     <>
       <PageHeader
         eyebrow="Ensino em grupo"
         title="Aulas coletivas"
-        text="Crie encontros abertos para vários alunos. A reserva da sala é feita no sistema próprio do instituto — aqui você apenas informa o local."
+        text="Organize um encontro aberto e convide alunos com dúvidas parecidas."
       />
-      <div className="grid gap-6 lg:grid-cols-[1fr_.85fr]">
-        <div className="rounded-lg border bg-card p-5 sm:p-6">
-          <h2 className="font-display text-lg font-bold">Nova aula coletiva</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ao publicar, a aula fica visível para os alunos confirmarem presença.
-          </p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_0.85fr]">
+        <form
+          className="space-y-5"
+          onSubmit={(event) => {
+            event.preventDefault();
+            create();
+          }}
+        >
+          <div>
+            <h2 className="font-display text-lg font-bold">Nova aula coletiva</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              A reserva da sala é feita no sistema próprio do instituto.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-semibold">
               Disciplina
               <select
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 font-normal"
+                onChange={(event) => setSubject(event.target.value)}
+                className="mt-2 h-11 w-full rounded-md border border-input bg-background px-3 font-normal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 <option>Algoritmos</option>
                 <option>Estrutura de Dados</option>
@@ -81,115 +92,121 @@ export function MonitorClasses({
             <label className="text-sm font-semibold">
               Tema da aula
               <Input
+                required
+                maxLength={120}
                 value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="mt-2 h-10 font-normal"
+                onChange={(event) => setTopic(event.target.value)}
+                className="mt-2 h-11 font-normal"
                 placeholder="Ex.: Recursão e casos base"
               />
             </label>
             <label className="text-sm font-semibold">
               Data
               <Input
+                required
+                type="date"
+                min={new Date().toISOString().slice(0, 10)}
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="mt-2 h-10 font-normal"
-                placeholder="Ex.: 05 out"
+                onChange={(event) => setDate(event.target.value)}
+                className="mt-2 h-11 font-normal"
               />
             </label>
             <label className="text-sm font-semibold">
               Horário
               <Input
+                required
+                type="time"
                 value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="mt-2 h-10 font-normal"
-                placeholder="Ex.: 14h"
+                onChange={(event) => setTime(event.target.value)}
+                className="mt-2 h-11 font-normal"
               />
             </label>
             <label className="text-sm font-semibold">
-              Sala (número e/ou nome)
+              Sala
               <Input
+                required
+                maxLength={80}
                 value={room}
-                onChange={(e) => setRoom(e.target.value)}
-                className="mt-2 h-10 font-normal"
-                placeholder="Ex.: Sala 12 — Bloco B"
+                onChange={(event) => setRoom(event.target.value)}
+                className="mt-2 h-11 font-normal"
+                placeholder="Ex.: Sala 12, Bloco B"
               />
             </label>
             <label className="text-sm font-semibold">
               Mínimo de alunos
               <Input
+                required
                 type="number"
                 min={1}
+                step={1}
                 value={min}
-                onChange={(e) => setMin(e.target.value)}
-                className="mt-2 h-10 font-normal"
+                onChange={(event) => setMin(event.target.value)}
+                className="mt-2 h-11 font-normal"
               />
             </label>
           </div>
-          <label className="mt-5 block text-sm font-semibold">
+          <label className="block text-sm font-semibold">
             Descrição (opcional)
             <Textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(event) => setDescription(event.target.value)}
               className="mt-2 min-h-24 font-normal"
-              placeholder="O que será abordado no encontro..."
+              placeholder="O que será abordado no encontro?"
             />
           </label>
-          <div className="mt-5 rounded-md bg-info-soft p-3 text-xs leading-relaxed text-info">
-            A reserva de salas do instituto é feita em outro aplicativo. Aqui você só informa o
-            local para os alunos.
-          </div>
-          <div className="mt-6 flex justify-end">
-            <Button onClick={create}>
-              <Users />
-              Publicar aula coletiva
+          <p className="border-t border-border pt-4 text-sm leading-relaxed text-muted-foreground">
+            Informe uma sala já reservada no sistema do instituto. A publicação não reserva o
+            espaço.
+          </p>
+          <div className="flex justify-end">
+            <Button type="submit">
+              <Users aria-hidden="true" />
+              Publicar aula
             </Button>
           </div>
-        </div>
+        </form>
         <aside>
-          <h2 className="mb-3 text-sm font-bold">Aulas que você criou</h2>
-          <div className="space-y-3">
-            {classes
-              .filter((c) => c.monitor === "Carlos")
-              .map((item) => {
+          <h2 className="mb-3 font-display text-lg font-bold">Aulas que você criou</h2>
+          {mine.length ? (
+            <div className="divide-y divide-border border-y border-border">
+              {mine.map((item) => {
                 const ready = item.people >= item.min;
                 return (
-                  <article key={item.id} className="rounded-lg border bg-card p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">
-                        {item.subject}
-                      </span>
+                  <article key={item.id} className="py-4">
+                    <p className="text-sm font-medium text-primary">{item.subject}</p>
+                    <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="font-semibold">{item.topic}</h3>
                       {ready && (
-                        <span className="flex items-center gap-1 text-xs font-semibold text-success">
-                          <CheckCircle2 className="size-4" />
+                        <span className="flex items-center gap-2 text-xs font-semibold text-success">
+                          <CheckCircle aria-hidden="true" />
                           Mínimo atingido
                         </span>
                       )}
                     </div>
-                    <h3 className="mt-3 font-semibold">{item.topic}</h3>
-                    <div className="mt-3 space-y-1.5 text-sm text-muted-foreground">
+                    <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                       <p className="flex items-center gap-2">
-                        <CalendarCheck className="size-4" />
-                        {item.date} • {item.time}
+                        <CalendarCheck aria-hidden="true" />
+                        {formatClassDate(item.date)} · {formatClassTime(item.time)}
                       </p>
                       <p className="flex items-center gap-2">
-                        <BookOpen className="size-4" />
+                        <BookOpen aria-hidden="true" />
                         {item.room}
                       </p>
                       <p className="flex items-center gap-2">
-                        <Users className="size-4" />
-                        {item.people} confirmados • mínimo {item.min}
+                        <Users aria-hidden="true" />
+                        {item.people} confirmados · mínimo {item.min}
                       </p>
                     </div>
                   </article>
                 );
               })}
-            {classes.filter((c) => c.monitor === "Carlos").length === 0 && (
-              <EmptyState
-                title="Nenhuma aula criada"
-                text="Use o formulário ao lado para criar sua primeira aula coletiva."
-              />
-            )}
-          </div>
+            </div>
+          ) : (
+            <EmptyState
+              title="Nenhuma aula criada"
+              text="Use o formulário para publicar seu primeiro encontro."
+            />
+          )}
         </aside>
       </div>
     </>

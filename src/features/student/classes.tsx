@@ -1,17 +1,26 @@
-import { useState } from "react";
-import { BookOpen, CalendarCheck, Check, CheckCircle2, Users } from "lucide-react";
+import {
+  BookOpen,
+  CalendarCheck,
+  Check,
+  CheckCircle as CheckCircle2,
+  Users,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { ClassSession } from "@/lib/mock-data";
+import { formatClassDate, formatClassTime } from "@/lib/class-format";
+import type { ClassSession } from "@/lib/mock-data";
 import { EmptyState, PageHeader } from "@/components/shared-ui";
 
 export function CollectiveClasses({
   classes,
+  confirmed,
+  setConfirmed,
   notify,
 }: {
   classes: ClassSession[];
+  confirmed: number[];
+  setConfirmed: React.Dispatch<React.SetStateAction<number[]>>;
   notify: (m: string) => void;
 }) {
-  const [confirmed, setConfirmed] = useState<number[]>([]);
   return (
     <>
       <PageHeader
@@ -19,67 +28,79 @@ export function CollectiveClasses({
         title="Aulas coletivas"
         text="Confirme presença nos encontros organizados pelos monitores."
       />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="divide-y divide-border border-y border-border">
         {classes.map((item) => {
           const joined = confirmed.includes(item.id);
           const count = item.people + (joined ? 1 : 0);
           const ready = count >= item.min;
           return (
-            <article key={item.id} className="rounded-lg border bg-card p-5">
-              <div className="flex items-start justify-between gap-4">
-                <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">
-                  {item.subject}
-                </span>
+            <article
+              key={item.id}
+              className="grid gap-5 py-5 md:grid-cols-[minmax(0,1fr)_12rem] md:items-center"
+            >
+              <div>
+                <p className="text-sm font-semibold text-primary">{item.subject}</p>
+                <h2 className="mt-1 font-display text-lg font-bold">{item.topic}</h2>
+                <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted-foreground">
+                  {item.description}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                  <span className="inline-flex items-center gap-2">
+                    <CalendarCheck aria-hidden="true" />
+                    {formatClassDate(item.date)} · {formatClassTime(item.time)}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <BookOpen aria-hidden="true" />
+                    {item.room}
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    <Users aria-hidden="true" />
+                    {count} confirmados · mínimo {item.min} · Monitor {item.monitor}
+                  </span>
+                </div>
+                <div
+                  className="mt-4 h-1 overflow-hidden bg-muted"
+                  role="progressbar"
+                  aria-label={`Confirmações para ${item.topic}`}
+                  aria-valuemin={0}
+                  aria-valuemax={item.min}
+                  aria-valuenow={Math.min(count, item.min)}
+                >
+                  <div
+                    className="h-full bg-primary transition-[width] duration-300 ease-out"
+                    style={{ width: `${Math.min(100, (count / item.min) * 100)}%` }}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col items-start gap-3 md:items-end">
                 {ready && (
-                  <span className="flex items-center gap-1 text-xs font-semibold text-success">
-                    <CheckCircle2 className="size-4" />
-                    Aula confirmada
+                  <span className="flex items-center gap-2 text-sm font-semibold text-success">
+                    <CheckCircle2 aria-hidden="true" />
+                    Mínimo atingido
                   </span>
                 )}
+                <Button
+                  type="button"
+                  variant={joined ? "secondary" : "default"}
+                  aria-pressed={joined}
+                  className="w-full md:w-auto"
+                  onClick={() => {
+                    setConfirmed((current) =>
+                      joined ? current.filter((id) => id !== item.id) : [...current, item.id],
+                    );
+                    notify(joined ? "Presença removida." : "Presença confirmada.");
+                  }}
+                >
+                  {joined ? (
+                    <>
+                      <Check aria-hidden="true" />
+                      Presença confirmada
+                    </>
+                  ) : (
+                    "Confirmar presença"
+                  )}
+                </Button>
               </div>
-              <h2 className="mt-4 font-display text-lg font-bold">{item.topic}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {item.description}
-              </p>
-              <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <p className="flex items-center gap-2">
-                  <CalendarCheck className="size-4" />
-                  {item.date} • {item.time}
-                </p>
-                <p className="flex items-center gap-2">
-                  <BookOpen className="size-4" />
-                  {item.room}
-                </p>
-                <p className="flex items-center gap-2">
-                  <Users className="size-4" />
-                  {count} confirmados • mínimo {item.min} • Monitor {item.monitor}
-                </p>
-              </div>
-              <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${Math.min(100, (count / item.min) * 100)}%` }}
-                />
-              </div>
-              <Button
-                variant={joined ? "secondary" : "default"}
-                className="mt-5 w-full"
-                onClick={() => {
-                  setConfirmed((p) =>
-                    joined ? p.filter((id) => id !== item.id) : [...p, item.id],
-                  );
-                  notify(joined ? "Presença removida." : "Presença confirmada!");
-                }}
-              >
-                {joined ? (
-                  <>
-                    <Check />
-                    Presença confirmada
-                  </>
-                ) : (
-                  "Confirmar presença"
-                )}
-              </Button>
             </article>
           );
         })}

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle as CheckCircle2 } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { PrototypeProvider, usePrototype } from "@/components/prototype-state";
 

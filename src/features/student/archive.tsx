@@ -1,90 +1,112 @@
 import { useState } from "react";
-import { ChevronRight, Search } from "lucide-react";
+import { CaretRight, MagnifyingGlass } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { ArchiveItem } from "@/lib/mock-data";
+import type { ArchiveItem } from "@/lib/mock-data";
 import { EmptyState, PageHeader } from "@/components/shared-ui";
 
 export function ArchiveView({ archive }: { archive: ArchiveItem[] }) {
   const [query, setQuery] = useState("");
-  const [subject, setSubject] = useState("Todas");
+  const [subject, setSubject] = useState("Todas as disciplinas");
   const [open, setOpen] = useState<number | null>(null);
   const results = archive.filter(
-    (a) =>
-      (subject === "Todas" || a.subject === subject) &&
-      `${a.title} ${a.topic}`.toLowerCase().includes(query.toLowerCase()),
+    (item) =>
+      (subject === "Todas as disciplinas" || item.subject === subject) &&
+      `${item.title} ${item.topic} ${item.answer}`.toLowerCase().includes(query.toLowerCase()),
   );
+
   return (
     <>
       <PageHeader
         eyebrow="Conhecimento compartilhado"
         title="Acervo de dúvidas"
-        text="Consulte respostas revisadas por monitores em semestres anteriores."
+        text="Encontre respostas revisadas por monitores. Pesquise pelo assunto, pela pergunta ou por uma palavra da explicação."
       />
-      <div className="rounded-lg border bg-card p-4">
-        <div className="grid gap-3 md:grid-cols-[1fr_220px]">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Busque por dúvida, tema ou palavra-chave"
-              className="h-10 pl-9"
-            />
-          </div>
+      <div className="grid gap-3 border-y border-border py-4 md:grid-cols-[minmax(0,1fr)_14rem]">
+        <label className="relative block">
+          <span className="sr-only">Buscar no acervo</span>
+          <MagnifyingGlass
+            aria-hidden="true"
+            className="absolute left-3 top-3 size-5 text-muted-foreground"
+          />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar pergunta ou palavra-chave"
+            className="h-11 pl-10"
+          />
+        </label>
+        <label>
+          <span className="sr-only">Filtrar por disciplina</span>
           <select
             value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            onChange={(event) => setSubject(event.target.value)}
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
-            <option>Todas</option>
+            <option>Todas as disciplinas</option>
             <option>Algoritmos</option>
             <option>Estrutura de Dados</option>
             <option>Banco de Dados</option>
           </select>
-        </div>
+        </label>
       </div>
-      <p className="mb-3 mt-6 text-sm font-semibold">{results.length} respostas encontradas</p>
-      <div className="space-y-3">
-        {results.map((item) => (
-          <article key={item.id} className="rounded-lg border bg-card">
-            <button
-              type="button"
-              className="flex w-full items-start justify-between gap-4 p-5 text-left"
-              onClick={() => setOpen(open === item.id ? null : item.id)}
-            >
-              <div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full bg-primary-soft px-2 py-1 text-xs font-semibold text-primary">
-                    {item.subject}
+      <p className="my-5 text-sm text-muted-foreground" aria-live="polite">
+        {results.length} {results.length === 1 ? "resposta encontrada" : "respostas encontradas"}
+      </p>
+      {results.length ? (
+        <div className="divide-y divide-border border-y border-border">
+          {results.map((item) => {
+            const isOpen = open === item.id;
+            const answerId = `archive-answer-${item.id}`;
+            return (
+              <article key={item.id} className="py-1">
+                <button
+                  type="button"
+                  className="flex min-h-20 w-full items-center justify-between gap-5 py-4 text-left"
+                  onClick={() => setOpen(isOpen ? null : item.id)}
+                  aria-expanded={isOpen}
+                  aria-controls={answerId}
+                >
+                  <span>
+                    <span className="text-sm font-medium text-primary">{item.subject}</span>
+                    <span className="mx-2 text-muted-foreground" aria-hidden="true">
+                      ·
+                    </span>
+                    <span className="text-sm text-muted-foreground">{item.topic}</span>
+                    <span className="mt-2 block font-semibold">{item.title}</span>
+                    <span className="mt-1 block text-sm leading-relaxed text-muted-foreground">
+                      {item.preview}
+                    </span>
                   </span>
-                  <span className="rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                    {item.topic}
-                  </span>
+                  <CaretRight
+                    aria-hidden="true"
+                    className={cn(
+                      "size-5 shrink-0 text-muted-foreground transition-transform duration-200",
+                      isOpen && "rotate-90 text-primary",
+                    )}
+                  />
+                </button>
+                <div
+                  id={answerId}
+                  hidden={!isOpen}
+                  className={cn(
+                    "border-t border-border py-5 pl-0 sm:pl-4",
+                    isOpen && "answer-reveal",
+                  )}
+                >
+                  <p className="text-sm font-semibold text-primary">Resposta do monitor</p>
+                  <p className="mt-2 max-w-prose whitespace-pre-line text-sm leading-relaxed">
+                    {item.answer}
+                  </p>
                 </div>
-                <h2 className="mt-3 font-semibold">{item.title}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">{item.preview}</p>
-              </div>
-              <ChevronRight
-                className={cn(
-                  "mt-1 size-5 shrink-0 text-muted-foreground transition-transform",
-                  open === item.id && "rotate-90",
-                )}
-              />
-            </button>
-            {open === item.id && (
-              <div className="border-t bg-muted/30 p-5">
-                <p className="text-sm font-semibold text-primary">Resposta revisada</p>
-                <p className="mt-2 text-sm leading-relaxed">{item.answer}</p>
-              </div>
-            )}
-          </article>
-        ))}
-      </div>
-      {results.length === 0 && (
+              </article>
+            );
+          })}
+        </div>
+      ) : (
         <EmptyState
-          title="Nenhuma resposta encontrada"
-          text="Tente buscar por outro termo ou disciplina."
+          title="Nenhuma resposta com esses termos"
+          text="Tente outra palavra ou selecione Todas as disciplinas."
         />
       )}
     </>
